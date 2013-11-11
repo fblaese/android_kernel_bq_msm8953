@@ -6434,6 +6434,8 @@ v_BOOL_t hdd_update_config_dat( hdd_context_t *pHddCtx )
    {
       fStatus = FALSE;
       hddLog(LOGE, "Couldn't pass WNI_CFG_ENABLE_POWERSAVE_OFFLOAD to CCM");
+   }else{
+      hddLog(LOGE, "Passed WNI_CFG_ENABLE_POWERSAVE_OFFLOAD to CCM");
    }
 
    if(ccmCfgSetInt(pHddCtx->hHal, WNI_CFG_BTC_2M_DYN_LONG_WLAN_LEN,

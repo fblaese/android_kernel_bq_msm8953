@@ -3227,7 +3227,7 @@ This feature requires the dependent cfg.ini "gRoamPrefer5GHz" set to 1 */
 /* Value for ENABLE_POWERSAVE_OFFLOAD*/
 #define CFG_ENABLE_POWERSAVE_OFFLOAD_NAME       "gEnablePowerSaveOffload"
 #define CFG_ENABLE_POWERSAVE_OFFLOAD_MIN        (1)
-#define CFG_ENABLE_POWERSAVE_OFFLOAD_MAX        (2)
+#define CFG_ENABLE_POWERSAVE_OFFLOAD_MAX        (4)
 #define CFG_ENABLE_POWERSAVE_OFFLOAD_DEFAULT    (1)
 
 /*
