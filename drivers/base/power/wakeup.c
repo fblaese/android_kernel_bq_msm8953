@@ -16,11 +16,15 @@
 #include <linux/debugfs.h>
 #include <linux/pm_wakeirq.h>
 #include <linux/types.h>
+#include <linux/moduleparam.h>
 #include <trace/events/power.h>
 #include <linux/irq.h>
 #include <linux/irqdesc.h>
 
 #include "power.h"
+
+static bool enable_ipa_ws = false;
+module_param(enable_ipa_ws, bool, 0644);
 
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
@@ -492,6 +496,8 @@ static bool wakeup_source_not_registered(struct wakeup_source *ws)
 		   ws->timer.data != (unsigned long)ws;
 }
 
+static void wakeup_source_deactivate(struct wakeup_source *ws);
+
 /*
  * The functions below use the observation that each wakeup event starts a
  * period in which the system should not be suspended.  The moment this period
@@ -535,6 +541,13 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 	if (WARN_ONCE(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
 		return;
+
+	if (!enable_ipa_ws && !strncmp(ws->name, "IPA_WS", 6)) {
+	    if (ws->active)
+		wakeup_source_deactivate(ws);
+
+		return;
+	}
 
 	/*
 	 * active wakeup source should bring the system
