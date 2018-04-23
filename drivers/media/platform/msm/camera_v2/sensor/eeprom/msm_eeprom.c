@@ -26,6 +26,46 @@ DEFINE_MSM_MUTEX(msm_eeprom_mutex);
 static struct v4l2_file_operations msm_eeprom_v4l2_subdev_fops;
 #endif
 
+
+// Module definitions
+static camera_vendor_module_id imx298_sunny_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl);
+static camera_vendor_module_id imx298_oflim_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl);
+static camera_vendor_module_id s5k2l7_ofilm_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl);
+static camera_vendor_module_id s5k4h8_oflim_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl);
+
+const camera_vendor_module camera_vendor_module_table[] = {
+	{
+		"imx298_sunny",
+		"sony_imx298_sunny",
+		MID_SUNNY,
+		imx298_sunny_get_otp_vendor_module_id
+	},
+	{
+		"imx298_ofilm",
+		"sony_imx298_ofilm",
+		MID_OFILM,
+		imx298_oflim_get_otp_vendor_module_id
+	},
+	{
+		"s5k2l7",
+		"ofilm_gt24c64_s5k2l7",
+		MID_OFILM,
+		s5k2l7_ofilm_get_otp_vendor_module_id
+	},
+	{
+		"s5k4h8_OFF0380",
+		"ofilm_s5k4h8",
+		MID_OFILM,
+		s5k4h8_oflim_get_otp_vendor_module_id
+	}
+};
+
+#define CAMERA_VENDOR_COUNT_MAX sizeof(camera_vendor_module_table)/sizeof(camera_vendor_module)
+
+const uint32_t CAMERA_VENDOR_EEPROM_COUNT_MAX = CAMERA_VENDOR_COUNT_MAX;
+
+struct vendor_eeprom s_vendor_eeprom[CAMERA_VENDOR_COUNT_MAX];
+
 /**
   * msm_get_read_mem_size - Get the total size for allocation
   * @eeprom_map_array:	mem map
@@ -625,7 +665,8 @@ static int msm_eeprom_config(struct msm_eeprom_ctrl_t *e_ctrl,
 		if (e_ctrl->userspace_probe == 1) {
 			pr_err("%s:%d Eeprom name should be module driver",
 				__func__, __LINE__);
-			rc = -EINVAL;
+			// return a special errno tell user space eeprom has already been probed at kernel boot
+			rc = -EALREADY;
 			break;
 		}
 		CDBG("%s E CFG_EEPROM_GET_INFO\n", __func__);
@@ -634,7 +675,8 @@ static int msm_eeprom_config(struct msm_eeprom_ctrl_t *e_ctrl,
 		if (length > MAX_EEPROM_NAME) {
 			pr_err("%s:%d invalid eeprom_name length %d\n",
 				__func__, __LINE__, (int)length);
-			rc = -EINVAL;
+			// return a special errno tell user space eeprom has already been probed at kernel boot
+			rc = -EALREADY;
 			break;
 		}
 		memcpy(cdata->cfg.eeprom_name,
@@ -1574,6 +1616,106 @@ static long msm_eeprom_subdev_fops_ioctl32(struct file *file, unsigned int cmd,
 
 #endif
 
+static camera_vendor_module_id imx298_sunny_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl)
+{
+	// please reference the otp spec.
+	uint8_t MODULE_INFO_OFFSET = 0x00;
+	uint8_t MID_FLAG_OFFSET = 0x31;
+	uint8_t mid=0;
+	uint8_t flag=0;
+	uint8_t *buffer = e_ctrl->cal_data.mapdata;
+	bool rc = false;
+
+	mid = buffer[MODULE_INFO_OFFSET];
+	flag = buffer[MID_FLAG_OFFSET];
+	CDBG("%s mid=0x%x, flag=0x%x\n", __func__, mid, flag);
+	rc = (mid==MID_SUNNY && flag==0x1) ? true : false;
+	if(rc==false) mid = MID_NULL;
+	return mid;
+
+}
+
+static camera_vendor_module_id imx298_oflim_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl)
+{
+	// please reference the otp spec.
+	uint8_t MODULE_INFO_OFFSET = 0x01;
+	uint8_t MID_FLAG_OFFSET = 0x00;
+	uint8_t mid=0;
+	uint8_t flag=0;
+	uint8_t *buffer = e_ctrl->cal_data.mapdata;
+	bool rc = false;
+
+	mid = buffer[MODULE_INFO_OFFSET];
+	flag = buffer[MID_FLAG_OFFSET];
+	CDBG("%s mid=0x%x, flag=0x%x\n", __func__, mid, flag);
+	rc = (mid==MID_OFILM && flag==0x1) ? true : false;
+	if(rc==false) mid = MID_NULL;
+	return mid;
+
+}
+
+static camera_vendor_module_id s5k2l7_ofilm_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl)
+{
+	// please refer to the otp spec.
+	uint8_t MODULE_INFO_OFFSET = 0x04;
+	uint8_t MID_FLAG_OFFSET = 0x00;
+	uint8_t mid=0;
+	uint8_t flag=0;
+	uint8_t *buffer = e_ctrl->cal_data.mapdata;
+	bool rc = false;
+
+	mid = buffer[MODULE_INFO_OFFSET];
+	flag = buffer[MID_FLAG_OFFSET];
+	CDBG("%s mid=0x%x, flag=0x%x\n", __func__, mid, flag);
+	rc = (mid==MID_OFILM && flag==0x1) ? true : false;
+	if(rc==false) mid = MID_NULL;
+	return mid;
+
+}
+
+static camera_vendor_module_id s5k4h8_oflim_get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl)
+{
+	uint8_t MID_FLAG_OFFSET = 0x00;
+	uint8_t MODULE_INFO_OFFSET_GROUP1 = 0x04;
+	uint8_t MODULE_INFO_OFFSET_GROUP2 = 24;
+	uint8_t mid=0;
+	uint8_t flag=0;
+	uint8_t *buffer = e_ctrl->cal_data.mapdata;
+	bool rc = false;
+
+	flag = buffer[MID_FLAG_OFFSET];
+
+	if(flag == 0x10){
+		mid = buffer[MODULE_INFO_OFFSET_GROUP1];
+	}else if(flag == 0xf1){
+		mid = buffer[MODULE_INFO_OFFSET_GROUP2];
+	}else{
+		mid = MID_NULL;
+	}
+	CDBG("%s mid=0x%x, flag=0x%x\n", __func__, mid, flag);
+	rc = (mid==MID_OFILM) ? true : false;
+	if(rc==false) mid = MID_NULL;
+	return mid;
+}
+
+static uint8_t get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl, const char *eeprom_name)
+{
+	camera_vendor_module_id module_id=MID_NULL;
+	int i = 0;
+
+	for (i = 0; i < CAMERA_VENDOR_EEPROM_COUNT_MAX; i++) {
+		if (strcmp(eeprom_name, camera_vendor_module_table[i].eeprom_name) == 0) {
+			module_id = camera_vendor_module_table[i].get_otp_id(e_ctrl);
+			break;
+		}
+	}
+
+	pr_err("%s eeprom_name=%s, module_id=%d\n",__func__,eeprom_name,module_id);
+	if(module_id>=MID_MAX) module_id = MID_NULL;
+
+	return ((uint8_t)module_id);
+}
+
 static int msm_eeprom_platform_probe(struct platform_device *pdev)
 {
 	int rc = 0;
@@ -1722,6 +1864,14 @@ static int msm_eeprom_platform_probe(struct platform_device *pdev)
 		for (j = 0; j < e_ctrl->cal_data.num_data; j++)
 			CDBG("memory_data[%d] = 0x%X\n", j,
 				e_ctrl->cal_data.mapdata[j]);
+
+		if(eb_info->eeprom_name != NULL){
+			s_vendor_eeprom[pdev->id].module_id = get_otp_vendor_module_id(e_ctrl, eb_info->eeprom_name);
+			strcpy(s_vendor_eeprom[pdev->id].eeprom_name, eb_info->eeprom_name);
+		}
+		else{
+			strcpy(s_vendor_eeprom[pdev->id].eeprom_name, "NULL");
+		}
 
 		e_ctrl->is_supported |= msm_eeprom_match_crc(&e_ctrl->cal_data);
 
