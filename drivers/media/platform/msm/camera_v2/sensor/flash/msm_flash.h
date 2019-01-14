@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2016,2018-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -31,6 +31,9 @@ enum msm_camera_flash_state_t {
 	MSM_CAMERA_FLASH_LOW,
 	MSM_CAMERA_FLASH_HIGH,
 	MSM_CAMERA_FLASH_RELEASE,
+	MSM_CAMERA_TORCH_HIGH,
+	MSM_CAMERA_TORCH_MID,
+	MSM_CAMERA_TORCH_LOW,
 };
 
 struct msm_flash_ctrl_t;
@@ -98,6 +101,7 @@ struct msm_flash_ctrl_t {
 
 	/* flash state */
 	enum msm_camera_flash_state_t flash_state;
+	const char * front_gpio_torch_labs;
 };
 
 int msm_flash_i2c_probe(struct i2c_client *client,
