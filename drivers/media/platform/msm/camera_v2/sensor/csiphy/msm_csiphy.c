@@ -65,6 +65,14 @@
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
 
+#define CONFIG_318_COMPAT_MODE 1
+
+#if !(defined CONFIG_318_COMPAT_MODE)
+#define CSIPHY_PARAMS_DATA_RATE csiphy_params->data_rate
+#else
+#define CSIPHY_PARAMS_DATA_RATE (long long unsigned int) 0
+#endif
+
 static struct v4l2_file_operations msm_csiphy_v4l2_subdev_fops;
 
 static void msm_csiphy_write_settings(
@@ -189,13 +197,13 @@ static int msm_csiphy_snps_2_lane_config(
 
 	csiphybase = csiphy_dev->base;
 
-	if (csiphy_params->data_rate >
+	if (CSIPHY_PARAMS_DATA_RATE >
 		SNPS_MAX_DATA_RATE_PER_LANE * num_lanes) {
 		pr_err("unsupported data rate\n");
 		return -EINVAL;
 	}
 
-	local_data_rate = csiphy_params->data_rate;
+	local_data_rate = CSIPHY_PARAMS_DATA_RATE;
 
 	if (mode == TWO_LANE_PHY_A)
 		offset = 0x0;
@@ -219,7 +227,7 @@ static int msm_csiphy_snps_2_lane_config(
 		diff = diff_i;
 	}
 
-	csiphy_dev->snps_programmed_data_rate = csiphy_params->data_rate;
+	csiphy_dev->snps_programmed_data_rate = CSIPHY_PARAMS_DATA_RATE;
 
 	if (mode == TWO_LANE_PHY_A) {
 		msm_camera_io_w(csiphy_dev->ctrl_reg->csiphy_snps_reg.
@@ -350,7 +358,7 @@ static int msm_csiphy_snps_lane_config(
 		num_lanes = 4;
 		if (csiphy_dev->snps_state != NOT_CONFIGURED) {
 			if (csiphy_dev->snps_programmed_data_rate !=
-				csiphy_params->data_rate)
+				CSIPHY_PARAMS_DATA_RATE)
 				pr_err("reconfiguring snps phy");
 			else
 				return 0;
@@ -371,7 +379,7 @@ static int msm_csiphy_snps_lane_config(
 			csiphy_dev->snps_state = CONFIGURED_COMBO_MODE;
 		} else {
 			if (csiphy_dev->snps_programmed_data_rate !=
-				csiphy_params->data_rate)
+				CSIPHY_PARAMS_DATA_RATE)
 				pr_err("reconfiguring snps phy");
 			else
 				return 0;
@@ -390,7 +398,7 @@ static int msm_csiphy_snps_lane_config(
 			csiphy_dev->snps_state = CONFIGURED_COMBO_MODE;
 		} else {
 			if (csiphy_dev->snps_programmed_data_rate !=
-				csiphy_params->data_rate)
+				CSIPHY_PARAMS_DATA_RATE)
 				pr_err("reconfiguring snps phy");
 			else
 				return 0;
@@ -1367,7 +1375,7 @@ static int msm_csiphy_lane_config(struct csiphy_device *csiphy_dev,
 	CDBG("%s csiphy_params, mask = 0x%x cnt = %d, data rate = %llu\n",
 		__func__,
 		csiphy_params->lane_mask,
-		csiphy_params->lane_cnt, csiphy_params->data_rate);
+		csiphy_params->lane_cnt, CSIPHY_PARAMS_DATA_RATE);
 	CDBG("%s csiphy_params, settle cnt = 0x%x csid %d\n",
 		__func__, csiphy_params->settle_cnt,
 		csiphy_params->csid_core);

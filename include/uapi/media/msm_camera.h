@@ -23,6 +23,8 @@
 
 #include <linux/msm_ion.h>
 
+#define CONFIG_318_COMPAT_MODE 1
+
 #define BIT(nr)   (1UL << (nr))
 
 #define MSM_CAM_IOCTL_MAGIC 'm'
@@ -1392,7 +1394,9 @@ struct msm_camera_csiphy_params {
 	uint16_t lane_mask;
 	uint8_t combo_mode;
 	uint8_t csid_core;
+#if !(defined CONFIG_318_COMPAT_MODE)
 	uint64_t data_rate;
+#endif
 };
 
 struct msm_camera_csi2_params {

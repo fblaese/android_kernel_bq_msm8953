@@ -21,6 +21,8 @@
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
 
+#define CONFIG_318_COMPAT_MODE 1
+
 static struct msm_camera_i2c_fn_t msm_sensor_cci_func_tbl;
 static struct msm_camera_i2c_fn_t msm_sensor_secure_func_tbl;
 
@@ -88,7 +90,9 @@ int32_t msm_sensor_free_sensor_data(struct msm_sensor_ctrl_t *s_ctrl)
 		return 0;
 	kfree(s_ctrl->sensordata->slave_info);
 	slave_info = s_ctrl->sensordata->cam_slave_info;
+#if !(defined CONFIG_318_COMPAT_MODE)
 	kfree(slave_info->sensor_id_info.setting.reg_setting);
+#endif
 	kfree(s_ctrl->sensordata->cam_slave_info);
 	kfree(s_ctrl->sensordata->actuator_info);
 	kfree(s_ctrl->sensordata->power_info.gpio_conf->gpio_num_info);

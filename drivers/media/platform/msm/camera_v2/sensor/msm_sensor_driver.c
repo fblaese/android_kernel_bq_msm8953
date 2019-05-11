@@ -20,6 +20,8 @@
 #include "msm_sensor_driver.h"
 #include "msm_eeprom.h"
 
+#define CONFIG_318_COMPAT_MODE 1
+
 /* Logging macro */
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
@@ -1037,7 +1039,9 @@ int32_t msm_sensor_driver_probe(void *setting,
 		slave_info->sensor_id_info.sensor_id_reg_addr;
 	camera_info->sensor_id = slave_info->sensor_id_info.sensor_id;
 	camera_info->sensor_id_mask = slave_info->sensor_id_info.sensor_id_mask;
+#if !(defined CONFIG_318_COMPAT_MODE)
 	camera_info->setting = &(slave_info->sensor_id_info.setting);
+#endif
 
 	/* Fill CCI master, slave address and CCI default params */
 	if (!s_ctrl->sensor_i2c_client) {
@@ -1200,7 +1204,9 @@ camera_power_down:
 free_camera_info:
 	kfree(camera_info);
 free_slave_info:
+#if !(defined CONFIG_318_COMPAT_MODE)
 	kfree(slave_info->sensor_id_info.setting.reg_setting);
+#endif
 	kfree(slave_info);
 	return rc;
 }

@@ -3,6 +3,8 @@
 
 #include <linux/videodev2.h>
 
+#define CONFIG_318_COMPAT_MODE 1
+
 #define KVERSION 0x1
 
 #define MAX_POWER_CONFIG      12
@@ -311,7 +313,9 @@ struct msm_sensor_id_info_t {
 	unsigned short sensor_id_reg_addr;
 	unsigned short sensor_id;
 	unsigned short sensor_id_mask;
+#if !(defined CONFIG_318_COMPAT_MODE)
 	struct msm_camera_i2c_reg_setting setting;
+#endif
 };
 
 struct msm_camera_sensor_slave_info {
@@ -375,7 +379,9 @@ struct msm_camera_csiphy_params {
 	unsigned char csid_core;
 	unsigned int csiphy_clk;
 	unsigned char csi_3phase;
+#if !(defined CONFIG_318_COMPAT_MODE)
 	uint64_t data_rate;
+#endif
 };
 
 struct msm_camera_i2c_seq_reg_array {
