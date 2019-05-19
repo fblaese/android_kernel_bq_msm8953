@@ -187,6 +187,20 @@ int msm_camera_clk_enable(struct device *dev,
 long msm_camera_clk_set_rate(struct device *dev,
 				struct clk *clk,
 				long clk_rate);
+
+/**
+ * @brief      : Sets flags of a clock
+ *
+ * This function will set the flags for a specified clock
+ *
+ * @param clk   : Pointer to clock to set flags for
+ * @param flags : The flags to set
+ *
+ * @return Status of operation.
+ */
+
+int msm_camera_set_clk_flags(struct clk *clk, unsigned long flags);
+
 /**
  * @brief      : Gets regulator info
  *
