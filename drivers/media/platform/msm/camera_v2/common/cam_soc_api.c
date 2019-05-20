@@ -454,6 +454,28 @@ long msm_camera_clk_set_rate(struct device *dev,
 }
 EXPORT_SYMBOL(msm_camera_clk_set_rate);
 
+/* Get reset info from DT */
+int msm_camera_get_reset_info(struct platform_device *pdev,
+		struct reset_control **micro_iface_reset)
+{
+	if (!pdev || !micro_iface_reset)
+		return -EINVAL;
+
+	if (of_property_match_string(pdev->dev.of_node, "reset-names",
+				"micro_iface_reset")) {
+		pr_err("err: Reset property not found\n");
+		return -EINVAL;
+	}
+
+	*micro_iface_reset = devm_reset_control_get
+				(&pdev->dev, "micro_iface_reset");
+	if (IS_ERR(*micro_iface_reset))
+		return PTR_ERR(*micro_iface_reset);
+
+	return 0;
+}
+EXPORT_SYMBOL(msm_camera_get_reset_info);
+
 int msm_camera_set_clk_flags(struct clk *clk, unsigned long flags)
 {
 	if (!clk)
@@ -662,6 +684,49 @@ error:
 	return rc;
 }
 EXPORT_SYMBOL(msm_camera_regulator_enable);
+
+/* set regulator mode */
+int msm_camera_regulator_set_mode(struct msm_cam_regulator *vdd_info,
+				int cnt, bool mode)
+{
+	int i;
+	int rc;
+	struct msm_cam_regulator *tmp = vdd_info;
+
+	if (!tmp) {
+		pr_err("Invalid params");
+		return -EINVAL;
+	}
+	CDBG("cnt : %d\n", cnt);
+
+	for (i = 0; i < cnt; i++) {
+		if (tmp && !IS_ERR_OR_NULL(tmp->vdd)) {
+			CDBG("name : %s, enable : %d\n", tmp->name, mode);
+			if (mode) {
+				rc = regulator_set_mode(tmp->vdd,
+					REGULATOR_MODE_NORMAL);
+				if (rc < 0) {
+					pr_err("regulator enable failed %d\n",
+						i);
+					goto error;
+				}
+			} else {
+				rc = regulator_set_mode(tmp->vdd,
+					REGULATOR_MODE_NORMAL);
+				if (rc < 0)
+					pr_err("regulator disable failed %d\n",
+						i);
+					goto error;
+			}
+		}
+		tmp++;
+	}
+
+	return 0;
+error:
+	return rc;
+}
+EXPORT_SYMBOL(msm_camera_regulator_set_mode);
 
 /* Put regulators regulators */
 void msm_camera_put_regulators(struct platform_device *pdev,
