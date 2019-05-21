@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2016,2018-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -31,9 +31,6 @@ enum msm_camera_flash_state_t {
 	MSM_CAMERA_FLASH_LOW,
 	MSM_CAMERA_FLASH_HIGH,
 	MSM_CAMERA_FLASH_RELEASE,
-	MSM_CAMERA_TORCH_HIGH,
-	MSM_CAMERA_TORCH_MID,
-	MSM_CAMERA_TORCH_LOW,
 };
 
 struct msm_flash_ctrl_t;
@@ -48,8 +45,6 @@ struct msm_flash_func_t {
 		struct msm_flash_cfg_data_t *);
 	int32_t (*camera_flash_high)(struct msm_flash_ctrl_t *,
 		struct msm_flash_cfg_data_t *);
-	int32_t (*camera_flash_query_current)(struct msm_flash_ctrl_t *,
-		struct msm_flash_query_data_t *);
 	int32_t (*camera_flash_torch_low)(struct msm_flash_ctrl_t *,
 		struct msm_flash_cfg_data_t *);
 	int32_t (*camera_flash_torch_mid)(struct msm_flash_ctrl_t *,
@@ -81,7 +76,6 @@ struct msm_flash_ctrl_t {
 	/* Switch node to trigger led */
 	const char *switch_trigger_name;
 	struct led_trigger *switch_trigger;
-	uint32_t is_regulator_enabled;
 
 	/* Flash */
 	uint32_t flash_num_sources;
@@ -110,12 +104,9 @@ struct msm_flash_ctrl_t {
 
 	/* flash state */
 	enum msm_camera_flash_state_t flash_state;
-	int32_t (*platform_flash_init)(struct msm_flash_ctrl_t *flash_ctrl,
-		struct msm_flash_cfg_data_t *flash_data);
 	bool front_flash_init;
 	uint16_t front_gpio_torch;
 	uint16_t front_gpio_flash;
-	const char * front_gpio_torch_labs;
 	const char * front_gpio_flash_labs;
 	bool rear_flash_init;
 	uint16_t rear_gpio_torch;
@@ -144,6 +135,4 @@ int msm_flash_led_release(struct msm_flash_ctrl_t *fctrl);
 int msm_flash_led_off(struct msm_flash_ctrl_t *fctrl);
 int msm_flash_led_low(struct msm_flash_ctrl_t *fctrl);
 int msm_flash_led_high(struct msm_flash_ctrl_t *fctrl);
-int32_t camera_flash_platform_probe(struct platform_device *pdev);
-
 #endif
