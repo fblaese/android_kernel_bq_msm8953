@@ -68,6 +68,8 @@ static int download_mode = 1;
 static const int download_mode;
 #endif
 
+static bool force_warm_reboot;
+
 #ifdef CONFIG_QCOM_DLOAD_MODE
 #define EDL_MODE_PROP "qcom,msm-imem-emergency_download_mode"
 #define DL_MODE_PROP "qcom,msm-imem-download_mode"
@@ -86,8 +88,6 @@ static void *kaslr_imem_addr;
 static bool scm_dload_supported;
 static struct kobject dload_kobj;
 static void *dload_type_addr;
-
-static bool force_warm_reboot;
 
 static int dload_set(const char *val, const struct kernel_param *kp);
 /* interface for exporting attributes */
